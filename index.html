@@ -442,14 +442,34 @@
                 let bestStrategyText = "";
                 let chosenTh10 = 100;
                 let chosenTh9 = 100;
+                let shouldEnhanceFrom7 = true; // 7강에서 8강 시도 여부
 
-                if (init_dur <= 8) {
+                // 7강에서 시작하는 경우, 8강 시도 vs 7강에서 판매 비교
+                if (cur_lvl === 7 && sale[7] > 0 && sale[8] > 0) {
+                    // 7강에서 그대로 파는 경우의 수익
+                    let sellAt7 = sale[7];
+
+                    // 8강 시도하는 경우의 기대수익
+                    let tryFor8 = sim_price_dual(trials, 7, init_dur, 100, 100, equip, use_dur, stone_unit, pot_factor, sale);
+
+                    if (sellAt7 > tryFor8) {
+                        shouldEnhanceFrom7 = false;
+                        finalExpectedValue = sellAt7;
+                        bestStrategyText = `
+                            <div class="text-sm text-slate-300">7강 상태입니다.</div>
+                            <div class="text-lg font-bold text-red-400 mt-1">⚠️ 8강 시도 권장하지 않음</div>
+                            <div class="text-xs text-slate-400 mt-2">7강 그대로 판매가 유리합니다<br>(8강 시도 시 기대수익: ${format_gold(tryFor8)})</div>
+                        `;
+                    }
+                }
+
+                if (shouldEnhanceFrom7 && init_dur <= 8) {
                     finalExpectedValue = sim_price_dual(trials, cur_lvl, init_dur, 100, 100, equip, use_dur, stone_unit, pot_factor, sale);
                     bestStrategyText = `
                         <div class="text-sm text-slate-300">현재 내구도가 낮아(<span class="text-red-400 font-bold">${init_dur}</span>) 보호제 효율이 낮습니다.</div>
                         <div class="text-lg font-bold text-white mt-1">깡강화(보호제 미사용) 추천</div>
                     `;
-                } else {
+                } else if (shouldEnhanceFrom7) {
                     let params = { 10: { ub: [10, 9], idx: [0, 1] }, 9: { ub: [9], idx: [1] } };
                     let setting = params[Math.min(init_dur, 10)];
 
@@ -496,7 +516,13 @@
                     `;
                 }
 
-                let probs = sim_stats_dual(trials, cur_lvl, init_dur, chosenTh10, chosenTh9, equip, use_dur, stone_unit, pot_factor);
+                // 7강에서 멈추는 경우 확률도 7강 100%로 표시
+                let probs;
+                if (!shouldEnhanceFrom7 && cur_lvl === 7) {
+                    probs = { 10: 0, 9: 0, 8: 0, 7: 100 };
+                } else {
+                    probs = sim_stats_dual(trials, cur_lvl, init_dur, chosenTh10, chosenTh9, equip, use_dur, stone_unit, pot_factor);
+                }
 
                 let roiBadgeHtml = "";
                 if (marketPrice > 0) {
@@ -528,7 +554,7 @@
                              <div class="text-xs text-slate-400 uppercase tracking-wide mb-2">최종 도달 확률</div>
                              ${[10, 9, 8, 7].map(lv => {
                     let p = probs[lv];
-                    let color = lv === 10 ? 'bg-red-500' : lv === 9 ? 'bg-orange-500' : lv === 8 ? 'bg-yellow-500' : 'bg-green-500';
+                    let color = lv === 10 ? 'bg-yellow-500' : lv === 9 ? 'bg-purple-500' : (lv === 8 || lv === 7) ? 'bg-red-500' : 'bg-green-500';
                     return `
                                     <div class="relative pt-1">
                                         <div class="flex items-center justify-between text-xs mb-1">
