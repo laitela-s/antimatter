@@ -168,16 +168,336 @@
         </div>
     </div>
     <script>
-        const SR = [1, .9, .8, .7, .6, .5, .4, .3, .2, .1], SRD = [1, .92, .83, .75, .67, .58, .5, .42, .33, .25], SC = [1, 2, 3, 5, 10, 20, 30, 50, 100, 200], PC = [1, 2, 3, 4, 8, 10, 15, 20, 30, 50];
-        function gold_cost(e, c) { let b; return b = e <= 69 ? Math.round(10 * e ** 2.5 / 10) * 10 : 70 === e ? 958000 : e >= 71 && e <= 79 ? 2e6 : 80 === e ? 3303400 : 90 === e ? 729e4 : Math.round(10 * e ** 2.5 / 10) * 10, b * 2 ** c }
-        function sim_trial(l, d, t10, t9, t8, e, u, s, p, sale) { let cost = 0, cl = l, cd = d; while (cl < 10 && cd > cl) { let prot = cd >= 10 ? cl >= t10 : cd === 9 ? cl >= t9 : cd === 8 && cl >= t8, base = u ? SRD[cl] : SR[cl], eff = prot ? Math.min(base + .2, 1) : base; prot ? cost += PC[cl] * p : cost += gold_cost(e, cl) + SC[cl] * s, Math.random() < eff ? cl++ : prot ? cd-- : Math.random() < cl / 10 ? { finalLevel: 0, cost } : cd-- } return { finalLevel: cl, cost } }
-        function sim_price(n, l, d, t10, t9, t8, e, u, s, p, sale) { let sum = 0; for (let i = 0; i < n; i++) { let r = sim_trial(l, d, t10, t9, t8, e, u, s, p, sale); sum += (r.finalLevel >= 7 ? (sale[r.finalLevel] || 0) - r.cost : -r.cost) } return sum / n }
-        function sim_stats(n, l, d, t10, t9, t8, e, u, s, p) { let c = { 10: 0, 9: 0, 8: 0, 7: 0, 0: 0 }; for (let i = 0; i < n; i++) { let r = sim_trial(l, d, t10, t9, t8, e, u, s, p, {}); r.finalLevel >= 7 ? c[r.finalLevel] = (c[r.finalLevel] || 0) + 1 : c[0]++ } return { 10: c[10] / n * 100, 9: c[9] / n * 100, 8: c[8] / n * 100, 7: c[7] / n * 100 } }
-        function format_gold(x) { let a = Math.abs(x), s = x < 0 ? "-" : ""; a = Math.round(a / 1e3) * 1e3; let o = Math.floor(a / 1e8), m = Math.floor(a % 1e8 / 1e4), p = []; return o && p.push(o + "억"), m && p.push(m + "만"), p.length ? s + p.join(" ") : "0" }
-        function saveInputs() { localStorage.setItem("enhancerInputsPro", JSON.stringify({ market_price: document.getElementById("market_price").value, sale7: document.getElementById("sale7").value, sale8: document.getElementById("sale8").value, sale9: document.getElementById("sale9").value, sale10: document.getElementById("sale10").value, enhance_level: document.getElementById("enhance_level").value, durability: document.getElementById("durability").value, stone_bulk: document.getElementById("stone_bulk").value, rea: document.getElementById("rea").value, equip: document.getElementById("equip").value, dur_flag: document.getElementById("dur_flag").value, trials: document.getElementById("trials").value })) }
-        function loadInputs() { const i = JSON.parse(localStorage.getItem("enhancerInputsPro")); if (i) { document.getElementById("market_price").value = i.market_price || ""; document.getElementById("sale7").value = i.sale7 || ""; document.getElementById("sale8").value = i.sale8 || ""; document.getElementById("sale9").value = i.sale9 || ""; document.getElementById("sale10").value = i.sale10 || ""; document.getElementById("enhance_level").value = i.enhance_level || ""; document.getElementById("durability").value = i.durability || ""; document.getElementById("stone_bulk").value = i.stone_bulk || ""; document.getElementById("rea").value = i.rea || ""; document.getElementById("equip").value = i.equip || ""; document.getElementById("dur_flag").value = i.dur_flag || "" } }
-        document.addEventListener("DOMContentLoaded", loadInputs); document.querySelectorAll("input,select").forEach(e => e.addEventListener("input", saveInputs));
-        function calculate() { saveInputs(); document.getElementById("loading").style.display = "block"; document.getElementById("result-container").classList.add("hidden"); setTimeout(() => { const mp = parseFloat(document.getElementById("market_price").value) * 1e8 || 0, s7 = parseFloat(document.getElementById("sale7").value) * 1e8 || 0, s8 = parseFloat(document.getElementById("sale8").value) * 1e8 || 0, s9 = parseFloat(document.getElementById("sale9").value) * 1e8 || 0, s10 = parseFloat(document.getElementById("sale10").value) * 1e8 || 0, sb = parseFloat(document.getElementById("stone_bulk").value) * 1e8 || 0, r = parseFloat(document.getElementById("rea").value) * 1e4 || 0, eq = parseFloat(document.getElementById("equip").value) || 0, ds = document.getElementById("dur_flag").value?.trim().toLowerCase(), tr = parseInt(document.getElementById("trials").value) || 200000; let sale = { 7: s7, 8: s8, 9: s9, 10: s10 }, cl = parseInt(document.getElementById("enhance_level").value), id = parseInt(document.getElementById("durability").value); if (isNaN(cl) || cl < 5 || isNaN(id) || !ds) { alert("모든 필수 항목을 입력해주세요"); document.getElementById("loading").style.display = "none"; return } let su = sb / 400, pf = 10 * r, ud = ds === 'o', fev = 0, bst = "", c10 = 100, c9 = 100, c8 = 100, sef = true, stop78 = false; if (id <= 8) { fev = sim_price(tr, cl, id, 100, 100, 100, eq, ud, su, pf, sale), bst = `<div class="text-sm text-slate-300">내구도 낮음 (<span class="text-red-400 font-bold">${id}</span>)</div><div class="text-lg font-bold text-white mt-1">깡강화 추천</div>` } else { let defs = [100, 100, 100], params = { 10: { ub: 10, idx: 0 }, 9: { ub: 9, idx: 1 }, 8: { ub: 8, idx: 2 } }; for (let dur of [10, 9, 8]) { if (id < dur) continue; let { ub, idx } = params[dur], lb = -1e99, lc = null; for (let ca = cl; ca < ub; ca++) { defs[idx] = ca; let exp = sim_price(tr, cl, id, defs[0], defs[1], defs[2], eq, ud, su, pf, sale); exp > lb && (lb = exp, lc = ca) } let en = sim_price(tr, cl, id, ...defs.slice(0, idx), 100, ...defs.slice(idx + 1), eq, ud, su, pf, sale); en > lb && (lb = en, lc = null), defs[idx] = lc || 100 } c10 = defs[0], c9 = defs[1], c8 = defs[2]; if (cl <= 7 && id >= 8 && s7 > 0 && s8 > 0) { let sa7 = s7, tf8 = sim_price(tr, 7, 8, c10, c9, c8, eq, ud, su, pf, sale); if (sa7 > tf8) { sef = false, stop78 = true, fev = sa7 } } if (sef) { fev = sim_price(tr, cl, id, c10, c9, c8, eq, ud, su, pf, sale); let ss = []; id >= 10 && ss.push(c10 === 100 ? '<span class="text-slate-400">내구10+:</span> <strong>미사용</strong>' : `<span class="text-slate-400">내구10+:</span> <strong class="text-blue-400">${c10}강</strong>부터`), id >= 9 && ss.push(c9 === 100 ? '<span class="text-slate-400">내구9:</span> <strong>미사용</strong>' : `<span class="text-slate-400">내구9:</span> <strong class="text-blue-400">${c9}강</strong>부터`), id >= 8 && ss.push(c8 === 100 ? '<span class="text-slate-400">내구8:</span> <strong>미사용</strong>' : `<span class="text-slate-400">내구8:</span> <strong class="text-blue-400">${c8}강</strong>부터`), stop78 && ss.push('<span class="text-slate-400">7/8 판단:</span> <strong class="text-orange-400">7강 판매</strong>'), bst = `<div class="space-y-1 text-sm bg-slate-700/50 p-3 rounded-lg border border-slate-600">${ss.map(s => `<div>${s}</div>`).join('')}</div>` } } let pr; pr = !sef && cl === 7 ? { 10: 0, 9: 0, 8: 0, 7: 100 } : sim_stats(tr, cl, id, c10, c9, c8, eq, ud, su, pf); let rb = ""; if (mp > 0) { let g = fev - mp, ig = g > 0, pc = Math.abs(g) / mp * 100; rb = `<div class="px-3 py-1 rounded-full text-xs font-bold border ${ig ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-red-500/20 text-red-400 border-red-500/50'}">${ig ? '▲ 이득' : '▼ 손해'} ${pc.toFixed(1)}%</div>` } const rc = `<div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-indigo-900/20 p-4 rounded-xl border border-indigo-500/30"><div class="text-xs text-indigo-300 mb-1">권장 전략</div>${bst}<div class="mt-4 pt-4 border-t border-indigo-500/30"><div class="text-xs text-slate-400">최종 기대수익</div><div class="text-2xl font-bold text-yellow-400">${format_gold(fev)}</div><div class="text-[10px] text-slate-500 mt-1">* 순수익</div></div></div><div class="space-y-3"><div class="text-xs text-slate-400 mb-2">최종 도달 확률</div>${[10, 9, 8, 7].map(lv => { let p = pr[lv], col = lv === 10 ? 'bg-yellow-500' : lv === 9 ? 'bg-purple-500' : 'bg-red-500'; return `<div class="relative pt-1"><div class="flex justify-between text-xs mb-1"><span class="font-bold text-slate-300">${lv}강</span><span class="text-slate-400">${p.toFixed(2)}%</span></div><div class="h-2 flex rounded bg-slate-700"><div style="width:${p}%" class="${col}"></div></div></div>` }).join('')}<div class="text-[10px] text-slate-500 text-right">나머지 ${Math.max(0, 100 - (pr[10] + pr[9] + pr[8] + pr[7])).toFixed(2)}% 파괴</div></div></div>`; document.getElementById("roi-badge").innerHTML = rb; document.getElementById("roi-badge").classList.remove("hidden"); document.getElementById("result-content").innerHTML = rc; document.getElementById("result-container").classList.remove("hidden"); document.getElementById("loading").style.display = "none"; window.innerWidth < 768 && document.getElementById("result-container").scrollIntoView({ behavior: 'smooth' }) }, 500) }
+        const SR = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1];
+        const SRD = [1, 0.92, 0.83, 0.75, 0.67, 0.58, 0.5, 0.42, 0.33, 0.25];
+        const SC = [1, 2, 3, 5, 10, 20, 30, 50, 100, 200];
+        const PC = [1, 2, 3, 4, 8, 10, 15, 20, 30, 50];
+
+        function gold_cost(e, c) {
+            let b;
+            if (e <= 69) b = Math.round(10 * e ** 2.5 / 10) * 10;
+            else if (e === 70) b = 958000;
+            else if (e >= 71 && e <= 79) b = 2000000;
+            else if (e === 80) b = 3303400;
+            else if (e === 90) b = 7290000;
+            else b = Math.round(10 * e ** 2.5 / 10) * 10;
+            return b * (2 ** c);
+        }
+
+        function sim_trial(l, d, t10, t9, t8, e, u, s, p, sale) {
+            let cost = 0, cl = l, cd = d;
+            while (cl < 10 && cd > cl) {
+                let prot = false;
+                if (cd >= 10) prot = cl >= t10;
+                else if (cd === 9) prot = cl >= t9;
+                else if (cd === 8) prot = cl >= t8;
+
+                let base = u ? SRD[cl] : SR[cl];
+                let eff = prot ? Math.min(base + 0.2, 1.0) : base;
+
+                if (prot) {
+                    cost += PC[cl] * p;
+                } else {
+                    cost += gold_cost(e, cl) + SC[cl] * s;
+                }
+
+                if (Math.random() < eff) {
+                    cl++;
+                } else {
+                    if (prot) {
+                        cd--;
+                    } else {
+                        if (Math.random() < (cl / 10.0)) {
+                            return { finalLevel: 0, cost: cost };
+                        } else {
+                            cd--;
+                        }
+                    }
+                }
+            }
+            return { finalLevel: cl, cost: cost };
+        }
+
+        function sim_price(n, l, d, t10, t9, t8, e, u, s, p, sale) {
+            let sum = 0;
+            for (let i = 0; i < n; i++) {
+                let r = sim_trial(l, d, t10, t9, t8, e, u, s, p, sale);
+                if (r.finalLevel >= 7) {
+                    sum += (sale[r.finalLevel] || 0) - r.cost;
+                } else {
+                    sum -= r.cost;
+                }
+            }
+            return sum / n;
+        }
+
+        function sim_stats(n, l, d, t10, t9, t8, e, u, s, p) {
+            let c = { 10: 0, 9: 0, 8: 0, 7: 0, 0: 0 };
+            for (let i = 0; i < n; i++) {
+                let r = sim_trial(l, d, t10, t9, t8, e, u, s, p, {});
+                if (r.finalLevel >= 7) {
+                    c[r.finalLevel] = (c[r.finalLevel] || 0) + 1;
+                } else {
+                    c[0]++;
+                }
+            }
+            return {
+                10: (c[10] / n) * 100,
+                9: (c[9] / n) * 100,
+                8: (c[8] / n) * 100,
+                7: (c[7] / n) * 100
+            };
+        }
+
+        function format_gold(x) {
+            let a = Math.abs(x);
+            let s = x < 0 ? "-" : "";
+            a = Math.round(a / 1000) * 1000;
+            let o = Math.floor(a / 100000000);
+            let m = Math.floor((a % 100000000) / 10000);
+            let p = [];
+            if (o > 0) p.push(o + "억");
+            if (m > 0) p.push(m + "만");
+            return p.length > 0 ? s + p.join(" ") : "0";
+        }
+
+        function saveInputs() {
+            localStorage.setItem("enhancerInputsPro", JSON.stringify({
+                market_price: document.getElementById("market_price").value,
+                sale7: document.getElementById("sale7").value,
+                sale8: document.getElementById("sale8").value,
+                sale9: document.getElementById("sale9").value,
+                sale10: document.getElementById("sale10").value,
+                enhance_level: document.getElementById("enhance_level").value,
+                durability: document.getElementById("durability").value,
+                stone_bulk: document.getElementById("stone_bulk").value,
+                rea: document.getElementById("rea").value,
+                equip: document.getElementById("equip").value,
+                dur_flag: document.getElementById("dur_flag").value,
+                trials: document.getElementById("trials").value
+            }));
+        }
+
+        function loadInputs() {
+            const i = JSON.parse(localStorage.getItem("enhancerInputsPro"));
+            if (i) {
+                document.getElementById("market_price").value = i.market_price || "";
+                document.getElementById("sale7").value = i.sale7 || "";
+                document.getElementById("sale8").value = i.sale8 || "";
+                document.getElementById("sale9").value = i.sale9 || "";
+                document.getElementById("sale10").value = i.sale10 || "";
+                document.getElementById("enhance_level").value = i.enhance_level || "";
+                document.getElementById("durability").value = i.durability || "";
+                document.getElementById("stone_bulk").value = i.stone_bulk || "";
+                document.getElementById("rea").value = i.rea || "";
+                document.getElementById("equip").value = i.equip || "";
+                document.getElementById("dur_flag").value = i.dur_flag || "";
+                // trials restoration removed
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadInputs);
+        document.querySelectorAll("input,select").forEach(e => e.addEventListener("input", saveInputs));
+
+        function calculate() {
+            saveInputs();
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("result-container").classList.add("hidden");
+
+            setTimeout(() => {
+                const mp = parseFloat(document.getElementById("market_price").value) * 1e8 || 0;
+                const s7 = parseFloat(document.getElementById("sale7").value) * 1e8 || 0;
+                const s8 = parseFloat(document.getElementById("sale8").value) * 1e8 || 0;
+                const s9 = parseFloat(document.getElementById("sale9").value) * 1e8 || 0;
+                const s10 = parseFloat(document.getElementById("sale10").value) * 1e8 || 0;
+                const sb = parseFloat(document.getElementById("stone_bulk").value) * 1e8 || 0;
+                const r = parseFloat(document.getElementById("rea").value) * 1e4 || 0;
+                const eq = parseFloat(document.getElementById("equip").value) || 0;
+                const ds = document.getElementById("dur_flag").value?.trim().toLowerCase();
+                const tr = parseInt(document.getElementById("trials").value) || 200000;
+
+                let sale = { 7: s7, 8: s8, 9: s9, 10: s10 };
+                let cl = parseInt(document.getElementById("enhance_level").value);
+                let id = parseInt(document.getElementById("durability").value);
+
+                if (isNaN(cl) || cl < 5 || isNaN(id) || !ds) {
+                    alert("모든 필수 항목을 입력해주세요");
+                    document.getElementById("loading").style.display = "none";
+                    return;
+                }
+
+                let su = sb / 400;
+                let pf = 10 * r;
+                let ud = ds === 'o';
+                let fev = 0;
+                let bst = "";
+                let c10 = 100, c9 = 100, c8 = 100;
+                let sef = true;
+                let stop78 = false;
+
+                // Fix: Changed id <= 8 to id < 8 to include 8 in optimization logic
+                if (id < 8) {
+                    fev = sim_price(tr, cl, id, 100, 100, 100, eq, ud, su, pf, sale);
+                    bst = `<div class="text-sm text-slate-300">내구도 낮음 (<span class="text-red-400 font-bold">${id}</span>)</div><div class="text-lg font-bold text-white mt-1">깡강화 추천</div>`;
+                } else {
+                    // Step 1: Optimize th10 (Protection start level for Durability 10+)
+                    let bestTh10 = 100;
+                    if (id >= 10) {
+                        let lb = -1e99;
+                        // Search from current level up to 10 (inclusive) as requested
+                        for (let ca = cl; ca <= 10; ca++) {
+                            // Test with th10=ca, others default (100)
+                            let exp = sim_price(tr, cl, id, ca, 100, 100, eq, ud, su, pf, sale, false);
+                            if (exp > lb) {
+                                lb = exp;
+                                bestTh10 = ca;
+                            }
+                        }
+                        // Check if NOT using protection (100) is better
+                        let en = sim_price(tr, cl, id, 100, 100, 100, eq, ud, su, pf, sale, false);
+                        if (en > lb) bestTh10 = 100;
+
+                        // User Rule: If bestTh10 is 10, it means "No Protection"
+                        if (bestTh10 === 10) bestTh10 = 100;
+                    }
+
+                    // Step 2: Optimize th9 (Protection start level for Durability 9)
+                    let bestTh9 = 100;
+                    if (id >= 9) {
+                        let lb = -1e99;
+                        // Search from current level up to 9 (inclusive)
+                        for (let ca = cl; ca <= 9; ca++) {
+                            // Test with th9=ca, using bestTh10, th8=100
+                            let exp = sim_price(tr, cl, id, bestTh10, ca, 100, eq, ud, su, pf, sale, false);
+                            if (exp > lb) {
+                                lb = exp;
+                                bestTh9 = ca;
+                            }
+                        }
+                        let en = sim_price(tr, cl, id, bestTh10, 100, 100, eq, ud, su, pf, sale, false);
+                        if (en > lb) bestTh9 = 100;
+
+                        // User Rule: If bestTh9 is 9, it means "No Protection"
+                        if (bestTh9 === 9) bestTh9 = 100;
+                    }
+
+                    // Step 3: Optimize th8 (Protection start level for Durability 8)
+                    let bestTh8 = 100;
+                    if (id >= 8) {
+                        let lb = -1e99;
+                        // Search from current level up to 8 (inclusive)
+                        for (let ca = cl; ca <= 8; ca++) {
+                            // Test with th8=ca, using bestTh10, bestTh9
+                            let exp = sim_price(tr, cl, id, bestTh10, bestTh9, ca, eq, ud, su, pf, sale, false);
+                            if (exp > lb) {
+                                lb = exp;
+                                bestTh8 = ca;
+                            }
+                        }
+                        let en = sim_price(tr, cl, id, bestTh10, bestTh9, 100, eq, ud, su, pf, sale, false);
+                        if (en > lb) bestTh8 = 100;
+
+                        // User Rule: If bestTh8 is 8, it means "No Protection"
+                        if (bestTh8 === 8) bestTh8 = 100;
+                    }
+
+                    c10 = bestTh10;
+                    c9 = bestTh9;
+                    c8 = bestTh8;
+
+                    // Step 4: Check Stop at 7/8 Strategy
+                    if (cl <= 7 && id >= 8 && s7 > 0 && s8 > 0) {
+                        let sa7 = s7;
+                        // Compare Sell@7 vs Continue Enhancing (using best strategies found) starting from 7/8 state
+                        // Logic: Simulate from 7/8 with established strategies
+                        let tf8 = sim_price(tr, 7, 8, c10, c9, c8, eq, ud, su, pf, sale, false);
+
+                        // If Selling 7 is greater than Expected Value of Continuing, recommend Stop
+                        if (sa7 > tf8) {
+                            stop78 = true;
+                        }
+                    }
+                }
+
+                // Final Calculation:
+                // Run simulation with determined strategies (c10, c9, c8) and stop flag (stop78)
+                // This accounts for the ACTUAL starting state (cur_lvl, durability)
+                // If stop78 is true, sim_price/sim_stats will handle the logic inside sim_trial
+                fev = sim_price(tr, cl, id, c10, c9, c8, eq, ud, su, pf, sale, stop78);
+
+                // Build Strategy Text
+                if (id < 8) {
+                    // bst is already set above for low durability
+                } else {
+                    let ss = [];
+                    if (id >= 10) ss.push(c10 === 100 ? '<span class="text-slate-400">내구10+:</span> <strong>미사용</strong>' : `<span class="text-slate-400">내구10+:</span> <strong class="text-blue-400">${c10}강</strong>부터`);
+                    if (id >= 9) ss.push(c9 === 100 ? '<span class="text-slate-400">내구9:</span> <strong>미사용</strong>' : `<span class="text-slate-400">내구9:</span> <strong class="text-blue-400">${c9}강</strong>부터`);
+                    if (id >= 8) ss.push(c8 === 100 ? '<span class="text-slate-400">내구8:</span> <strong>미사용</strong>' : `<span class="text-slate-400">내구8:</span> <strong class="text-blue-400">${c8}강</strong>부터`);
+                    if (stop78) ss.push('<span class="text-slate-400">7/8 판단:</span> <strong class="text-orange-400">7강 판매</strong>');
+
+                    if (ss.length > 0) {
+                        bst = `<div class="space-y-1 text-sm bg-slate-700/50 p-3 rounded-lg border border-slate-600">${ss.map(s => `<div>${s}</div>`).join('')}</div>`;
+                    }
+                }
+
+                let pr;
+                // If user is ALREADY at 7/8 and strategy is sell, probabilities are simply 100% at 7.
+                if (stop78 && cl === 7 && id === 8) {
+                    pr = { 10: 0, 9: 0, 8: 0, 7: 100 };
+                } else {
+                    // Otherwise simulate prob distribution with the stop strategy
+                    pr = sim_stats(tr, cl, id, c10, c9, c8, eq, ud, su, pf, stop78);
+                }
+
+                let rb = "";
+                if (mp > 0) {
+                    let g = fev - mp;
+                    let ig = g > 0;
+                    let pc = Math.abs(g) / mp * 100;
+                    rb = `<div class="px-3 py-1 rounded-full text-xs font-bold border ${ig ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-red-500/20 text-red-400 border-red-500/50'}">${ig ? '▲ 이득' : '▼ 손해'} ${pc.toFixed(1)}%</div>`;
+                }
+
+                const rc = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-indigo-900/20 p-4 rounded-xl border border-indigo-500/30">
+                            <div class="text-xs text-indigo-300 mb-1">권장 전략</div>
+                            ${bst}
+                            <div class="mt-4 pt-4 border-t border-indigo-500/30">
+                                <div class="text-xs text-slate-400">최종 기대수익</div>
+                                <div class="text-2xl font-bold text-yellow-400">${format_gold(fev)}</div>
+                                <div class="text-[10px] text-slate-500 mt-1">* 순수익</div>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="text-xs text-slate-400 mb-2">최종 도달 확률</div>
+                            ${[10, 9, 8, 7].map(lv => {
+                    let p = pr[lv];
+                    let col = lv === 10 ? 'bg-yellow-500' : lv === 9 ? 'bg-purple-500' : 'bg-red-500';
+                    return `
+                                    <div class="relative pt-1">
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <span class="font-bold text-slate-300">${lv}강</span>
+                                            <span class="text-slate-400">${p.toFixed(2)}%</span>
+                                        </div>
+                                        <div class="h-2 flex rounded bg-slate-700">
+                                            <div style="width:${p}%" class="${col}"></div>
+                                        </div>
+                                    </div>`;
+                }).join('')}
+                            <div class="text-[10px] text-slate-500 text-right">나머지 ${Math.max(0, 100 - (pr[10] + pr[9] + pr[8] + pr[7])).toFixed(2)}% 파괴</div>
+                        </div>
+                    </div>`;
+
+                document.getElementById("roi-badge").innerHTML = rb;
+                document.getElementById("roi-badge").classList.remove("hidden");
+                document.getElementById("result-content").innerHTML = rc;
+                document.getElementById("result-container").classList.remove("hidden");
+                document.getElementById("loading").style.display = "none";
+                if (window.innerWidth < 768) {
+                    document.getElementById("result-container").scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 500);
+        }
     </script>
 </body>
 
