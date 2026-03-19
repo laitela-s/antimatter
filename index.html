@@ -1,174 +1,509 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="dark">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Farm Price Tracker</title>
-    <!-- Tailwind CSS (via CDN for prototype) -->
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>강화 시뮬레이터</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: { colors: { slate: { 850: '#1e293b', 900: '#0f172a' } } } } }</script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 4px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent
+        }
+    </style>
 </head>
 
-<body class="bg-gray-50 text-gray-900 font-sans antialiased overflow-hidden h-screen flex">
-
-    <!-- Mobile Overlay for Sidebar -->
-    <div id="mobile-sidebar-overlay" style="display: none;" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden">
-    </div>
-
-    <!-- Sidebar (Filters) -->
-    <aside id="sidebar"
-        class="fixed inset-y-0 left-0 z-50 w-80 bg-white border-r border-gray-200 flex flex-col transform -translate-x-full md:translate-x-0 md:static md:flex transition-transform duration-300 ease-in-out">
-        <div class="p-6 border-b border-gray-200 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold text-blue-600">농장 시세 조회</h1>
-                <p class="text-xs text-gray-500 mt-1">시장 시세 현황</p>
-            </div>
-            <!-- Mobile Close Button -->
-            <button id="close-sidebar" class="md:hidden text-gray-500">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                    </path>
-                </svg>
-            </button>
-        </div>
-
-        <div class="p-6 flex-1 overflow-y-auto space-y-6">
-            <!-- Category Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">물품 분류</label>
-                <div class="flex space-x-2">
-                    <button class="filter-btn active w-1/2 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
-                        data-category="equip">장비</button>
-                    <button class="filter-btn w-1/2 py-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition"
-                        data-category="acc">악세서리</button>
-                </div>
-            </div>
-
-            <!-- Dynamic Filters (Injected by JS) -->
-            <div id="dynamic-filters" class="space-y-4">
-                <!-- Filters will be rendered here -->
-            </div>
-        </div>
-
-        <div class="p-4 border-t border-gray-200 text-center text-xs text-gray-400">
-            프로토타입 v0.1
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-full relative w-full bg-gray-50">
-        <!-- Header -->
-        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-8 shadow-sm">
-            <div class="flex items-center gap-3">
-                <!-- Mobile Menu Button -->
-                <button id="open-sidebar" class="md:hidden text-gray-500 hover:text-gray-900">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-                <h2 class="text-lg font-semibold truncate" id="page-title">전체 아이템</h2>
-            </div>
-            <div class="text-xs md:text-sm text-gray-500 whitespace-nowrap">업데이트: <span
-                    class="text-gray-900 font-medium">2026.01.11</span></div>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-10">
+    <div class="max-w-3xl mx-auto px-4 pt-6">
+        <header class="mb-6 text-center">
+            <h1
+                class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent mb-1">
+                강화 시뮬레이터 Pro</h1>
+            <p class="text-xs text-slate-400"><span class="text-red-400 font-medium">⚠️</span> 5강 이상, 옵션 장비 전용</p>
         </header>
-
-        <!-- Item Grid -->
-        <div class="flex-1 overflow-y-auto p-8">
-            <div id="item-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <!-- 아이템이 여기에 표시됩니다 -->
+        <div class="space-y-4 mb-8">
+            <div class="bg-slate-800 rounded-xl shadow-lg border border-slate-700/50">
+                <div class="px-5 py-3 border-b border-slate-700">
+                    <h2 class="text-sm font-semibold text-purple-300">🛡️ 장비 정보</h2>
+                </div>
+                <div class="p-5 grid grid-cols-2 gap-4">
+                    <div><label class="block text-[10px] text-slate-400 mb-1">현재 단계</label><select id="enhance_level"
+                            class="text-white w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm outline-none appearance-none">
+                            <option value="" disabled selected>선택</option>
+                            <option value="5">5강</option>
+                            <option value="6">6강</option>
+                            <option value="7">7강</option>
+                            <option value="8">8강</option>
+                            <option value="9">9강</option>
+                        </select></div>
+                    <div><label class="block text-[10px] text-slate-400 mb-1">내구도</label><input id="durability"
+                            type="number"
+                            class="text-white w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm outline-none"
+                            placeholder="입력"></div>
+                    <div><label class="block text-[10px] text-slate-400 mb-1">렙제</label><input id="equip" type="number"
+                            class="text-white w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm outline-none"
+                            placeholder="예: 70">
+                        <p class="text-[9px] text-slate-500 mt-1">강화 비용 계산용</p>
+                    </div>
+                    <div><label class="block text-[10px] text-slate-400 mb-1">튼튼한 장비</label><select id="dur_flag"
+                            class="text-white w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm outline-none appearance-none">
+                            <option value="" disabled selected>선택</option>
+                            <option value="o">예</option>
+                            <option value="x">아니오</option>
+                        </select></div>
+                </div>
+            </div>
+            <div class="bg-slate-800 rounded-xl shadow-lg border border-slate-700/50">
+                <div class="px-5 py-3 border-b border-slate-700">
+                    <h2 class="text-sm font-semibold text-green-300">💎 재료 비용</h2>
+                </div>
+                <div class="p-5 grid grid-cols-2 gap-4">
+                    <div><label class="block text-[10px] text-slate-400 mb-1">강화석 대덩 (억)</label><input id="stone_bulk"
+                            type="number" step="0.1"
+                            class="text-white w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm outline-none"
+                            placeholder="비용">
+                        <p class="text-[9px] text-slate-500 mt-1">재료비 계산용</p>
+                    </div>
+                    <div><label class="block text-[10px] text-slate-400 mb-1">강레 (만/레알)</label><input id="rea"
+                            type="number" step="1"
+                            class="text-white w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm outline-none"
+                            placeholder="단가">
+                        <p class="text-[9px] text-slate-500 mt-1">보호제 비용 계산용</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-800 rounded-xl shadow-lg border border-slate-700/50">
+                <div class="px-5 py-3 border-b border-slate-700">
+                    <h2 class="text-sm font-semibold text-blue-300">💰 판매 가격</h2>
+                </div>
+                <div class="p-5 grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <p class="text-[10px] text-slate-400 mb-3">최종 결과물 판매가 (기대가치 산출용)</p>
+                    </div>
+                    <div><label class="block text-[10px] text-slate-400 mb-1">7강 (억)</label><input id="sale7"
+                            type="number" step="0.1"
+                            class="text-white w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm outline-none">
+                    </div>
+                    <div><label class="block text-[10px] text-slate-400 mb-1">8강 (억)</label><input id="sale8"
+                            type="number" step="0.1"
+                            class="text-white w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm outline-none">
+                    </div>
+                    <div><label class="block text-[10px] text-slate-400 mb-1">9강 (억)</label><input id="sale9"
+                            type="number" step="0.1"
+                            class="text-white w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm outline-none">
+                    </div>
+                    <div><label class="block text-[10px] text-slate-400 mb-1">10강 (억)</label><input id="sale10"
+                            type="number" step="0.1"
+                            class="text-white w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm outline-none">
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-800 rounded-xl shadow-lg border border-slate-700/50">
+                <div class="px-5 py-3 border-b border-slate-700">
+                    <h2 class="text-sm font-semibold text-yellow-300">📊 현재 시세 (선택)</h2>
+                </div>
+                <div class="p-5"><label class="block text-[10px] text-slate-400 mb-1">현재 장비 시세 (억)</label><input
+                        id="market_price" type="number" step="0.1"
+                        class="text-white w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-3 text-sm outline-none"
+                        placeholder="선택">
+                    <p class="text-[9px] text-slate-500 mt-2">ROI 비교용<br><span class="text-yellow-500">※ 선택사항</span></p>
+                </div>
+            </div>
+            <div class="px-2">
+                <div class="flex justify-between text-xs text-slate-400 mb-1"><span>시뮬레이션 횟수</span><span
+                        id="trials-label" class="text-slate-300 font-mono">200,000</span></div>
+                <p class="text-[9px] text-slate-500 mb-2">높을수록 정확하나 시간 소요</p><input id="trials" type="range"
+                    min="100000" max="1000000" step="10000" value="200000"
+                    class="w-full h-2 bg-slate-700 rounded-lg accent-blue-500"
+                    oninput="document.getElementById('trials-label').innerText=parseInt(this.value).toLocaleString()">
+            </div>
+            <button onclick="calculate()"
+                class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg flex justify-center items-center gap-2"><svg
+                    class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>분석 시작</button>
+        </div>
+        <div id="result-container" class="hidden">
+            <div class="bg-slate-800 rounded-xl p-5 shadow-xl border border-slate-700 relative">
+                <div
+                    class="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 mb-5 text-[11px] text-blue-200 flex gap-2 items-start leading-snug">
+                    <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p>시뮬레이션 특성상 매번 미세한 편차 발생 가능</p>
+                </div>
+                <div id="roi-badge" class="hidden absolute top-0 right-0 m-5"></div>
+                <h2 class="text-base font-bold mb-4 flex items-center gap-2">📊 분석 결과</h2>
+                <div id="result-content" class="space-y-6"></div>
             </div>
         </div>
-    </main>
-
-    <!-- Detail Modal -->
-    <div id="modal-overlay" style="display: none;"
-        class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden z-50 flex items-end md:items-center justify-center md:p-4">
-        <div class="bg-white md:rounded-xl border-t md:border border-gray-200 shadow-2xl w-full max-w-5xl h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col overflow-hidden transform transition-all translate-y-full md:translate-y-0 md:scale-95 md:opacity-0"
-            id="modal-content">
-
-            <!-- Modal Header -->
-            <div class="p-6 border-b border-gray-100 flex justify-between items-start bg-gray-50">
-                <div>
-                    <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-3" id="modal-title">
-                        ITEM NAME
-                        <span class="text-sm px-2 py-1 rounded bg-gray-200 text-gray-700 font-normal"
-                            id="modal-subtitle">SUB INFO</span>
-                    </h3>
+        <div id="loading" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50" style="display:none">
+            <div class="h-full flex flex-col items-center justify-center">
+                <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4">
                 </div>
-                <button id="close-modal" class="text-gray-400 hover:text-gray-900 transition flex items-center justify-center rounded-full hover:bg-gray-200 p-1">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                        </path>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Modal Body -->
-            <div class="flex-1 overflow-hidden flex flex-col lg:flex-row bg-white">
-
-                <!-- Left: Matrix View (Equipment Only) or Info List -->
-                <div
-                    class="w-full lg:w-1/2 p-4 md:p-6 overflow-y-auto border-b lg:border-b-0 lg:border-r border-gray-100 bg-gray-50/50">
-                    <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">시세표 (강화/내구도)</h4>
-                    <div id="matrix-container" class="overflow-x-auto pb-4">
-                        <!-- Matrix Table inject here -->
-                        <div class="flex items-center justify-center h-64 text-gray-400">
-                            아이템을 선택해주세요
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right: Chart & Stats -->
-                <div class="w-full lg:w-1/2 p-6 flex flex-col bg-white">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider">시세 변동 기록</h4>
-                        <div class="flex gap-2">
-                            <!-- Y Scale Toggle -->
-                            <div class="flex bg-gray-100 rounded-lg p-1 space-x-1 border border-gray-200">
-                                <button
-                                    class="y-scale-btn active text-xs px-2 py-1 rounded bg-white text-blue-600 font-medium shadow-sm border border-gray-200"
-                                    data-scale="zoom">확대</button>
-                                <button
-                                    class="y-scale-btn text-xs px-2 py-1 rounded text-gray-500 hover:text-gray-900 transition"
-                                    data-scale="normal">일반</button>
-                            </div>
-                            <!-- Date Range Toggle (All) -->
-                            <div class="flex bg-gray-100 rounded-lg p-1 space-x-1 border border-gray-200">
-                                <button
-                                    class="chart-range-btn active text-xs px-2 py-1 rounded bg-white text-blue-600 font-medium shadow-sm border border-gray-200"
-                                    data-range="all">전체</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Chart Area -->
-                    <div class="flex-1 bg-white rounded-lg p-4 relative min-h-[300px] border border-gray-100 shadow-sm">
-                        <canvas id="priceChart"></canvas>
-                        <div id="chart-placeholder"
-                            class="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">
-                            표의 칸을 클릭하여 상세 정보를 확인하세요
-                        </div>
-                    </div>
-
-                    <!-- Current Stats -->
-                    <div class="mt-6 grid grid-cols-2 gap-4">
-                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm">
-                            <div class="text-xs text-gray-500 font-medium">현재 추정가</div>
-                            <div class="text-2xl font-bold text-red-500 mt-1" id="stat-price">-</div>
-                        </div>
-                        <!-- Removed Frequency Box -->
-                    </div>
-                </div>
+                <p class="text-blue-400 font-medium">분석 중...</p>
             </div>
         </div>
     </div>
+    <script>
+        const SR = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1];
+        const SRD = [1, 0.92, 0.83, 0.75, 0.67, 0.58, 0.5, 0.42, 0.33, 0.25];
+        const SC = [1, 2, 3, 5, 10, 20, 30, 50, 100, 200];
+        const PC = [1, 2, 3, 4, 8, 10, 15, 20, 30, 50];
 
-    <script src="data.js" onerror=""></script>
-    <script src="app.js"></script>
+        function gold_cost(e, c) {
+            let b;
+            if (e <= 69) b = Math.round(10 * e ** 2.5 / 10) * 10;
+            else if (e === 70) b = 958000;
+            else if (e >= 71 && e <= 79) b = 2000000;
+            else if (e === 80) b = 3303400;
+            else if (e === 90) b = 7290000;
+            else b = Math.round(10 * e ** 2.5 / 10) * 10;
+            return b * (2 ** c);
+        }
+
+        function sim_trial(l, d, t10, t9, t8, e, u, s, p, sale) {
+            let cost = 0, cl = l, cd = d;
+            while (cl < 10 && cd > cl) {
+                let prot = false;
+                if (cd >= 10) prot = cl >= t10;
+                else if (cd === 9) prot = cl >= t9;
+                else if (cd === 8) prot = cl >= t8;
+
+                let base = u ? SRD[cl] : SR[cl];
+                let eff = prot ? Math.min(base + 0.2, 1.0) : base;
+
+                if (prot) {
+                    cost += PC[cl] * p;
+                } else {
+                    cost += gold_cost(e, cl) + SC[cl] * s;
+                }
+
+                if (Math.random() < eff) {
+                    cl++;
+                } else {
+                    if (prot) {
+                        cd--;
+                    } else {
+                        if (Math.random() < (cl / 10.0)) {
+                            return { finalLevel: 0, cost: cost };
+                        } else {
+                            cd--;
+                        }
+                    }
+                }
+            }
+            return { finalLevel: cl, cost: cost };
+        }
+
+        function sim_price(n, l, d, t10, t9, t8, e, u, s, p, sale) {
+            let sum = 0;
+            for (let i = 0; i < n; i++) {
+                let r = sim_trial(l, d, t10, t9, t8, e, u, s, p, sale);
+                if (r.finalLevel >= 7) {
+                    sum += (sale[r.finalLevel] || 0) - r.cost;
+                } else {
+                    sum -= r.cost;
+                }
+            }
+            return sum / n;
+        }
+
+        function sim_stats(n, l, d, t10, t9, t8, e, u, s, p) {
+            let c = { 10: 0, 9: 0, 8: 0, 7: 0, 0: 0 };
+            for (let i = 0; i < n; i++) {
+                let r = sim_trial(l, d, t10, t9, t8, e, u, s, p, {});
+                if (r.finalLevel >= 7) {
+                    c[r.finalLevel] = (c[r.finalLevel] || 0) + 1;
+                } else {
+                    c[0]++;
+                }
+            }
+            return {
+                10: (c[10] / n) * 100,
+                9: (c[9] / n) * 100,
+                8: (c[8] / n) * 100,
+                7: (c[7] / n) * 100
+            };
+        }
+
+        function format_gold(x) {
+            let a = Math.abs(x);
+            let s = x < 0 ? "-" : "";
+            a = Math.round(a / 1000) * 1000;
+            let o = Math.floor(a / 100000000);
+            let m = Math.floor((a % 100000000) / 10000);
+            let p = [];
+            if (o > 0) p.push(o + "억");
+            if (m > 0) p.push(m + "만");
+            return p.length > 0 ? s + p.join(" ") : "0";
+        }
+
+        function saveInputs() {
+            localStorage.setItem("enhancerInputsPro", JSON.stringify({
+                market_price: document.getElementById("market_price").value,
+                sale7: document.getElementById("sale7").value,
+                sale8: document.getElementById("sale8").value,
+                sale9: document.getElementById("sale9").value,
+                sale10: document.getElementById("sale10").value,
+                enhance_level: document.getElementById("enhance_level").value,
+                durability: document.getElementById("durability").value,
+                stone_bulk: document.getElementById("stone_bulk").value,
+                rea: document.getElementById("rea").value,
+                equip: document.getElementById("equip").value,
+                dur_flag: document.getElementById("dur_flag").value,
+                trials: document.getElementById("trials").value
+            }));
+        }
+
+        function loadInputs() {
+            const i = JSON.parse(localStorage.getItem("enhancerInputsPro"));
+            if (i) {
+                document.getElementById("market_price").value = i.market_price || "";
+                document.getElementById("sale7").value = i.sale7 || "";
+                document.getElementById("sale8").value = i.sale8 || "";
+                document.getElementById("sale9").value = i.sale9 || "";
+                document.getElementById("sale10").value = i.sale10 || "";
+                document.getElementById("enhance_level").value = i.enhance_level || "";
+                document.getElementById("durability").value = i.durability || "";
+                document.getElementById("stone_bulk").value = i.stone_bulk || "";
+                document.getElementById("rea").value = i.rea || "";
+                document.getElementById("equip").value = i.equip || "";
+                document.getElementById("dur_flag").value = i.dur_flag || "";
+                // trials restoration removed
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadInputs);
+        document.querySelectorAll("input,select").forEach(e => e.addEventListener("input", saveInputs));
+
+        function calculate() {
+            saveInputs();
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("result-container").classList.add("hidden");
+
+            setTimeout(() => {
+                const mp = parseFloat(document.getElementById("market_price").value) * 1e8 || 0;
+                const s7 = parseFloat(document.getElementById("sale7").value) * 1e8 || 0;
+                const s8 = parseFloat(document.getElementById("sale8").value) * 1e8 || 0;
+                const s9 = parseFloat(document.getElementById("sale9").value) * 1e8 || 0;
+                const s10 = parseFloat(document.getElementById("sale10").value) * 1e8 || 0;
+                const sb = parseFloat(document.getElementById("stone_bulk").value) * 1e8 || 0;
+                const r = parseFloat(document.getElementById("rea").value) * 1e4 || 0;
+                const eq = parseFloat(document.getElementById("equip").value) || 0;
+                const ds = document.getElementById("dur_flag").value?.trim().toLowerCase();
+                const tr = parseInt(document.getElementById("trials").value) || 200000;
+
+                let sale = { 7: s7, 8: s8, 9: s9, 10: s10 };
+                let cl = parseInt(document.getElementById("enhance_level").value);
+                let id = parseInt(document.getElementById("durability").value);
+
+                if (isNaN(cl) || cl < 5 || isNaN(id) || !ds) {
+                    alert("모든 필수 항목을 입력해주세요");
+                    document.getElementById("loading").style.display = "none";
+                    return;
+                }
+
+                let su = sb / 400;
+                let pf = 10 * r;
+                let ud = ds === 'o';
+                let fev = 0;
+                let bst = "";
+                let c10 = 100, c9 = 100, c8 = 100;
+                let sef = true;
+                let stop78 = false;
+
+                // Fix: Changed id <= 8 to id < 8 to include 8 in optimization logic
+                if (id < 8) {
+                    fev = sim_price(tr, cl, id, 100, 100, 100, eq, ud, su, pf, sale);
+                    bst = `<div class="text-sm text-slate-300">내구도 낮음 (<span class="text-red-400 font-bold">${id}</span>)</div><div class="text-lg font-bold text-white mt-1">깡강화 추천</div>`;
+                } else {
+                    // Step 1: Optimize th10 (Protection start level for Durability 10+)
+                    let bestTh10 = 100;
+                    if (id >= 10) {
+                        let lb = -1e99;
+                        // Search from current level up to 10 (inclusive) as requested
+                        for (let ca = cl; ca <= 10; ca++) {
+                            // Test with th10=ca, others default (100)
+                            let exp = sim_price(tr, cl, id, ca, 100, 100, eq, ud, su, pf, sale, false);
+                            if (exp > lb) {
+                                lb = exp;
+                                bestTh10 = ca;
+                            }
+                        }
+                        // Check if NOT using protection (100) is better
+                        let en = sim_price(tr, cl, id, 100, 100, 100, eq, ud, su, pf, sale, false);
+                        if (en > lb) bestTh10 = 100;
+
+                        // User Rule: If bestTh10 is 10, it means "No Protection"
+                        if (bestTh10 === 10) bestTh10 = 100;
+                    }
+
+                    // Step 2: Optimize th9 (Protection start level for Durability 9)
+                    let bestTh9 = 100;
+                    if (id >= 9) {
+                        let lb = -1e99;
+                        // Search from current level up to 9 (inclusive)
+                        for (let ca = cl; ca <= 9; ca++) {
+                            // Test with th9=ca, using bestTh10, th8=100
+                            let exp = sim_price(tr, cl, id, bestTh10, ca, 100, eq, ud, su, pf, sale, false);
+                            if (exp > lb) {
+                                lb = exp;
+                                bestTh9 = ca;
+                            }
+                        }
+                        let en = sim_price(tr, cl, id, bestTh10, 100, 100, eq, ud, su, pf, sale, false);
+                        if (en > lb) bestTh9 = 100;
+
+                        // User Rule: If bestTh9 is 9, it means "No Protection"
+                        if (bestTh9 === 9) bestTh9 = 100;
+                    }
+
+                    // Step 3: Optimize th8 (Protection start level for Durability 8)
+                    let bestTh8 = 100;
+                    if (id >= 8) {
+                        let lb = -1e99;
+                        // Search from current level up to 8 (inclusive)
+                        for (let ca = cl; ca <= 8; ca++) {
+                            // Test with th8=ca, using bestTh10, bestTh9
+                            let exp = sim_price(tr, cl, id, bestTh10, bestTh9, ca, eq, ud, su, pf, sale, false);
+                            if (exp > lb) {
+                                lb = exp;
+                                bestTh8 = ca;
+                            }
+                        }
+                        let en = sim_price(tr, cl, id, bestTh10, bestTh9, 100, eq, ud, su, pf, sale, false);
+                        if (en > lb) bestTh8 = 100;
+
+                        // User Rule: If bestTh8 is 8, it means "No Protection"
+                        if (bestTh8 === 8) bestTh8 = 100;
+                    }
+
+                    c10 = bestTh10;
+                    c9 = bestTh9;
+                    c8 = bestTh8;
+
+                    // Step 4: Check Stop at 7/8 Strategy
+                    if (cl <= 7 && id >= 8 && s7 > 0 && s8 > 0) {
+                        let sa7 = s7;
+                        // Compare Sell@7 vs Continue Enhancing (using best strategies found) starting from 7/8 state
+                        // Logic: Simulate from 7/8 with established strategies
+                        let tf8 = sim_price(tr, 7, 8, c10, c9, c8, eq, ud, su, pf, sale, false);
+
+                        // If Selling 7 is greater than Expected Value of Continuing, recommend Stop
+                        if (sa7 > tf8) {
+                            stop78 = true;
+                        }
+                    }
+                }
+
+                // Final Calculation:
+                // Run simulation with determined strategies (c10, c9, c8) and stop flag (stop78)
+                // This accounts for the ACTUAL starting state (cur_lvl, durability)
+                // If stop78 is true, sim_price/sim_stats will handle the logic inside sim_trial
+                fev = sim_price(tr, cl, id, c10, c9, c8, eq, ud, su, pf, sale, stop78);
+
+                // Build Strategy Text
+                if (id < 8) {
+                    // bst is already set above for low durability
+                } else {
+                    let ss = [];
+                    if (id >= 10) ss.push(c10 === 100 ? '<span class="text-slate-400">내구10+:</span> <strong>미사용</strong>' : `<span class="text-slate-400">내구10+:</span> <strong class="text-blue-400">${c10}강</strong>부터`);
+                    if (id >= 9) ss.push(c9 === 100 ? '<span class="text-slate-400">내구9:</span> <strong>미사용</strong>' : `<span class="text-slate-400">내구9:</span> <strong class="text-blue-400">${c9}강</strong>부터`);
+                    if (id >= 8) ss.push(c8 === 100 ? '<span class="text-slate-400">내구8:</span> <strong>미사용</strong>' : `<span class="text-slate-400">내구8:</span> <strong class="text-blue-400">${c8}강</strong>부터`);
+                    if (stop78) ss.push('<span class="text-slate-400">7/8 판단:</span> <strong class="text-orange-400">7강 판매</strong>');
+
+                    if (ss.length > 0) {
+                        bst = `<div class="space-y-1 text-sm bg-slate-700/50 p-3 rounded-lg border border-slate-600">${ss.map(s => `<div>${s}</div>`).join('')}</div>`;
+                    }
+                }
+
+                let pr;
+                // If user is ALREADY at 7/8 and strategy is sell, probabilities are simply 100% at 7.
+                if (stop78 && cl === 7 && id === 8) {
+                    pr = { 10: 0, 9: 0, 8: 0, 7: 100 };
+                } else {
+                    // Otherwise simulate prob distribution with the stop strategy
+                    pr = sim_stats(tr, cl, id, c10, c9, c8, eq, ud, su, pf, stop78);
+                }
+
+                let rb = "";
+                if (mp > 0) {
+                    let g = fev - mp;
+                    let ig = g > 0;
+                    let pc = Math.abs(g) / mp * 100;
+                    rb = `<div class="px-3 py-1 rounded-full text-xs font-bold border ${ig ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-red-500/20 text-red-400 border-red-500/50'}">${ig ? '▲ 이득' : '▼ 손해'} ${pc.toFixed(1)}%</div>`;
+                }
+
+                const rc = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-indigo-900/20 p-4 rounded-xl border border-indigo-500/30">
+                            <div class="text-xs text-indigo-300 mb-1">권장 전략</div>
+                            ${bst}
+                            <div class="mt-4 pt-4 border-t border-indigo-500/30">
+                                <div class="text-xs text-slate-400">최종 기대수익</div>
+                                <div class="text-2xl font-bold text-yellow-400">${format_gold(fev)}</div>
+                                <div class="text-[10px] text-slate-500 mt-1">* 순수익</div>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="text-xs text-slate-400 mb-2">최종 도달 확률</div>
+                            ${[10, 9, 8, 7].map(lv => {
+                    let p = pr[lv];
+                    let col = lv === 10 ? 'bg-yellow-500' : lv === 9 ? 'bg-purple-500' : 'bg-red-500';
+                    return `
+                                    <div class="relative pt-1">
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <span class="font-bold text-slate-300">${lv}강</span>
+                                            <span class="text-slate-400">${p.toFixed(2)}%</span>
+                                        </div>
+                                        <div class="h-2 flex rounded bg-slate-700">
+                                            <div style="width:${p}%" class="${col}"></div>
+                                        </div>
+                                    </div>`;
+                }).join('')}
+                            <div class="text-[10px] text-slate-500 text-right">나머지 ${Math.max(0, 100 - (pr[10] + pr[9] + pr[8] + pr[7])).toFixed(2)}% 파괴</div>
+                        </div>
+                    </div>`;
+
+                document.getElementById("roi-badge").innerHTML = rb;
+                document.getElementById("roi-badge").classList.remove("hidden");
+                document.getElementById("result-content").innerHTML = rc;
+                document.getElementById("result-container").classList.remove("hidden");
+                document.getElementById("loading").style.display = "none";
+                if (window.innerWidth < 768) {
+                    document.getElementById("result-container").scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 500);
+        }
+    </script>
 </body>
 
 </html>
